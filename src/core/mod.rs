@@ -6,6 +6,7 @@ use crate::types::PairName;
 
 pub mod alert;
 pub mod api;
+pub mod notification;
 pub mod symbol;
 
 /// Main alerts struct which contains all the alerts
