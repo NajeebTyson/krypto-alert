@@ -3,7 +3,6 @@ use crate::error::ApiError;
 use reqwest::{header, Client, Response as ReqwestResponse};
 use serde::Serialize;
 
-use crate::types::Amount;
 use log;
 
 const BINANCE_BASE_API_URL: &str = "https://api.binance.com";

@@ -2,9 +2,8 @@
 extern crate lazy_static;
 #[macro_use]
 extern crate serde_derive;
-#[macro_use]
-extern crate log;
 extern crate config;
+extern crate log;
 
 mod core;
 mod error;
@@ -13,11 +12,9 @@ mod settings;
 mod types;
 mod utils;
 
-use crate::core::alert::{Alert, AlertType};
-use crate::core::api;
-use crate::core::symbol::Symbol;
+use crate::core::alert::AlertType;
 
-use futures::executor::block_on;
+// use futures::executor::block_on;
 
 #[tokio::main]
 async fn main() {
