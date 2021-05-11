@@ -5,8 +5,14 @@ pub struct Settings {
     pub poll_interval: i16,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct Logging {
+    pub level: String,
+}
+
 #[derive(Deserialize, Debug)]
 pub struct AppConfig {
+    pub logging: Logging,
     pub settings: Settings,
 }
 

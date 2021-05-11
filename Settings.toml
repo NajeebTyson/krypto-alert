@@ -1,2 +1,6 @@
+[logging]
+level = "info"
+
 [settings]
 poll_interval = 30
+

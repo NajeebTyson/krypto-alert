@@ -3,6 +3,7 @@ use crate::error::ApiError;
 use reqwest::{header, Client, Response as ReqwestResponse};
 use serde::Serialize;
 
+use crate::types::Amount;
 use log;
 
 const BINANCE_BASE_API_URL: &str = "https://api.binance.com";
@@ -52,8 +53,19 @@ pub async fn get_symbol_price(symbol: &str) -> Result<SymbolResponse, ApiError> 
     let query = vec![("symbol", symbol)];
     let res = binance_get_request::<()>(&SYMBOL_PRICE_URL, Some(query), None).await?;
     if !res.status().is_success() {
-        log::error!("get_symbol_price error: {}", res.text().await?);
-        return Err(ApiError::UnableToGetSymbolError);
+        return if res.status() == 400 {
+            let error = res.json::<serde_json::Value>().await?;
+            log::error!(
+                "get_symbol_price Bad request: {}",
+                error["msg"].as_str().unwrap()
+            );
+            Err(ApiError::InvalidSymbol {
+                symbol: symbol.to_string(),
+            })
+        } else {
+            log::error!("get_symbol_price error: {}", res.text().await?);
+            Err(ApiError::UnableToGetSymbolError)
+        };
     }
     let data: SymbolResponse = res.json().await?;
     Ok(data)
