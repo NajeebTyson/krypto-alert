@@ -26,6 +26,8 @@ pub enum AppError {
     AppApiError { message: String },
     #[snafu(display("App error: {}", message))]
     DefaultError { message: String },
+    #[snafu(display("App error: thread is already running"))]
+    ThreadAlreadyRunning,
 }
 
 impl From<SerdeJsonError> for ApiError {

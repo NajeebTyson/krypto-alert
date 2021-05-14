@@ -1,14 +1,18 @@
 use crate::error::ApiError;
 
-use reqwest::{header, Client, Response as ReqwestResponse};
+use log;
+use reqwest::{
+    blocking::{Client, Response as ReqwestResponse},
+    header,
+};
 use serde::Serialize;
 
-use log;
+use std::sync::Arc;
 
 const BINANCE_BASE_API_URL: &str = "https://api.binance.com";
 
 lazy_static! {
-    static ref CLIENT: Client = Client::new();
+    static ref CLIENT: Arc<Client> = Arc::new(Client::new());
     static ref SYMBOL_PRICE_URL: String = format!("{}/api/v3/ticker/price", BINANCE_BASE_API_URL);
 }
 
@@ -31,7 +35,7 @@ async fn binance_get_request<'a, T: Serialize>(
     if let Some(payload) = payload {
         req = req.json(&serde_json::to_value(payload)?);
     }
-    let res = req.send().await?;
+    let res = req.send()?;
 
     Ok(res)
 }
@@ -40,10 +44,10 @@ async fn binance_get_request<'a, T: Serialize>(
 pub async fn get_all_symbols_price() -> Result<SymbolsResponse, ApiError> {
     let res = binance_get_request::<()>(&SYMBOL_PRICE_URL, None, None).await?;
     if !res.status().is_success() {
-        log::error!("get_all_symbols_price error: {}", res.text().await?);
+        log::error!("get_all_symbols_price error: {}", res.text()?);
         return Err(ApiError::UnableToGetSymbolError);
     }
-    let data: SymbolsResponse = res.json().await?;
+    let data: SymbolsResponse = res.json()?;
     Ok(data)
 }
 
@@ -53,7 +57,7 @@ pub async fn get_symbol_price(symbol: &str) -> Result<SymbolResponse, ApiError> 
     let res = binance_get_request::<()>(&SYMBOL_PRICE_URL, Some(query), None).await?;
     if !res.status().is_success() {
         return if res.status() == 400 {
-            let error = res.json::<serde_json::Value>().await?;
+            let error = res.json::<serde_json::Value>()?;
             log::error!(
                 "get_symbol_price Bad request: {}",
                 error["msg"].as_str().unwrap()
@@ -62,11 +66,11 @@ pub async fn get_symbol_price(symbol: &str) -> Result<SymbolResponse, ApiError> 
                 symbol: symbol.to_string(),
             })
         } else {
-            log::error!("get_symbol_price error: {}", res.text().await?);
+            log::error!("get_symbol_price error: {}", res.text()?);
             Err(ApiError::UnableToGetSymbolError)
         };
     }
-    let data: SymbolResponse = res.json().await?;
+    let data: SymbolResponse = res.json()?;
     Ok(data)
 }
 

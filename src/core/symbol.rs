@@ -8,7 +8,7 @@ use futures::executor::block_on;
 #[derive(Debug)]
 pub struct Symbol {
     pub name: PairName,
-    current_price: Amount,
+    pub current_price: Amount,
 }
 
 impl Symbol {

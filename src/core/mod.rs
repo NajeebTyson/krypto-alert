@@ -6,8 +6,16 @@ use crate::types::PairName;
 
 pub mod alert;
 pub mod api;
-pub mod notification;
-pub mod symbol;
+mod notification;
+mod symbol;
+pub mod worker;
+
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Arc,
+};
+use std::thread;
+use std::time::Duration;
 
 /// Main alerts struct which contains all the alerts
 #[derive(Debug)]
@@ -18,9 +26,13 @@ pub struct Alerts {
 impl Alerts {
     /// Initialize Alerts, it will load the alerts from data file if alerts exist
     pub fn init() -> Self {
-        Alerts {
+        // Construct Alert
+        let mut alerts = Alerts {
             alerts: Default::default(),
-        }
+        };
+
+        // return alert instance
+        alerts
     }
 
     /// Create a new alert for symbol/pair
@@ -39,6 +51,15 @@ impl Alerts {
             }
         }
         Ok(())
+    }
+
+    /// Method check for prices and notify the alerts
+    pub fn refresh(&mut self) {
+        info!("Alerts::refresh started");
+        thread::sleep(Duration::from_secs(1));
+        self.create_alert("ETHUSDT", AlertType::ChangeOver(1.));
+        println!("refresh::alerts {:?}", self.alerts);
+        info!("Alerts::refresh closing");
     }
 }
 
