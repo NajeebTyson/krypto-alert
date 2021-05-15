@@ -1,6 +1,8 @@
 use crate::error::ApiError;
+use crate::types::Amount;
 
 use log;
+use rayon::prelude::*;
 use reqwest::{
     blocking::{Client, Response as ReqwestResponse},
     header,
@@ -47,8 +49,9 @@ pub async fn get_all_symbols_price() -> Result<SymbolsResponse, ApiError> {
         log::error!("get_all_symbols_price error: {}", res.text()?);
         return Err(ApiError::UnableToGetSymbolError);
     }
-    let data: SymbolsResponse = res.json()?;
-    Ok(data)
+    let data: SymbolsRes = res.json()?;
+    let data: SymbolsResponseVec = data.into();
+    Ok(data.0)
 }
 
 /// Get single the symbol and current price from Binance
@@ -70,17 +73,49 @@ pub async fn get_symbol_price(symbol: &str) -> Result<SymbolResponse, ApiError> 
             Err(ApiError::UnableToGetSymbolError)
         };
     }
-    let data: SymbolResponse = res.json()?;
-    Ok(data)
+    let data: SymbolRes = res.json()?;
+    Ok(data.into())
 }
 
 /// Struct to hold symbol name and price
 #[derive(Debug, Serialize, Deserialize)]
-pub struct SymbolResponse {
+struct SymbolRes {
     //"ETHBTC"
     pub symbol: String,
     // "0.06036600"
     pub price: String,
 }
 
+type SymbolsRes = Vec<SymbolRes>;
+
+/// Struct to hold symbol name and price
+#[derive(Debug)]
+pub struct SymbolResponse {
+    //"ETHBTC"
+    pub symbol: String,
+    // 0.06036600
+    pub price: Amount,
+}
+
 pub type SymbolsResponse = Vec<SymbolResponse>;
+struct SymbolsResponseVec(pub Vec<SymbolResponse>);
+
+impl From<SymbolRes> for SymbolResponse {
+    fn from(symbol_res: SymbolRes) -> Self {
+        SymbolResponse {
+            symbol: symbol_res.symbol,
+            price: symbol_res.price.parse::<Amount>().unwrap(),
+        }
+    }
+}
+
+impl From<SymbolsRes> for SymbolsResponseVec {
+    fn from(symbols: SymbolsRes) -> Self {
+        SymbolsResponseVec(
+            symbols
+                .into_par_iter()
+                .map(|symbol| symbol.into())
+                .collect(),
+        )
+    }
+}

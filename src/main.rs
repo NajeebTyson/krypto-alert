@@ -29,13 +29,11 @@ fn main() {
     alerts
         .lock()
         .unwrap()
-        .create_alert("DOGEUSDT", AlertType::ChangeOver(1.));
+        .create_alert("DOGEUSDT", AlertType::ChangeOver(1.), true);
     alerts
         .lock()
         .unwrap()
-        .create_alert("ETHUSDT", AlertType::ChangeOver(1.));
-
-    thread::sleep(Duration::from_secs(1));
+        .create_alert("ETHUSDT", AlertType::ChangeOver(1.), true);
 
     let local_alerts = alerts.clone();
     worker.start(move || {
@@ -43,6 +41,7 @@ fn main() {
         alerts.refresh();
     });
 
+    thread::sleep(Duration::from_secs(2));
     println!("alerts: {:?}", alerts);
 
     worker.stop();
