@@ -30,6 +30,11 @@ fn main() {
         .lock()
         .unwrap()
         .create_alert("DOGEUSDT", AlertType::ChangeOver(1.), true);
+
+    alerts
+        .lock()
+        .unwrap()
+        .create_alert("DOGEUSDT", AlertType::ChangeUnder(1.), true);
     alerts
         .lock()
         .unwrap()
@@ -41,7 +46,7 @@ fn main() {
         alerts.refresh();
     });
 
-    thread::sleep(Duration::from_secs(2));
+    thread::sleep(Duration::from_secs(260));
     println!("alerts: {:?}", alerts);
 
     worker.stop();

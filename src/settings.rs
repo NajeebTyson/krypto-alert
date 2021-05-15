@@ -2,7 +2,8 @@ use config::{Config, ConfigError, File};
 
 #[derive(Debug, Deserialize)]
 pub struct Settings {
-    pub poll_interval: i16,
+    pub poll_interval: u64,
+    pub notification_timeout: u8,
 }
 
 #[derive(Debug, Deserialize)]

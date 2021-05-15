@@ -3,4 +3,6 @@ level = "info"
 
 [settings]
 poll_interval = 30
+# timeout in seconds for notification
+notification_timeout = 5
 

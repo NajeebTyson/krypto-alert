@@ -1,12 +1,13 @@
 pub mod alert;
 pub mod api;
-mod notification;
+pub mod notification;
 mod symbol;
 pub mod worker;
 
 use crate::core::alert::{Alert, AlertType, SimpleAlert};
 use crate::core::api::{SymbolResponse, SymbolsResponse};
 use crate::error::AppError;
+use crate::settings::SETTINGS;
 use crate::types::PairName;
 use crate::utils;
 
@@ -65,13 +66,18 @@ impl Alerts {
             // renew alerts
             self.renew_prices(symbol);
         }
+
+        // sleep
+        thread::sleep(Duration::from_secs(SETTINGS.settings.poll_interval));
     }
 
     /// Check with the current price for alert
     fn check_symbol_alerts(&self, symbol: &SymbolResponse) {
         if let Some(alerts) = self.alerts.get(&symbol.symbol) {
             for alert in &alerts.symbol_alerts {
-                self.check_alert(&symbol, &alert);
+                if self.check_alert(&symbol, &alert) {
+                    notification::notify(&symbol, &alert);
+                }
             }
         }
     }
@@ -82,11 +88,15 @@ impl Alerts {
             AlertType::PriceAbove(price) => symbol.price > price,
             AlertType::PriceBelow(price) => symbol.price < price,
             AlertType::ChangeOver(percent) => {
-                utils::calc_percentage_change(alert.current_price.borrow(), &symbol.price) > percent
+                let new_percent =
+                    utils::calc_percentage_change(alert.current_price.borrow(), &symbol.price);
+                new_percent > percent
             }
 
             AlertType::ChangeUnder(percent) => {
-                utils::calc_percentage_change(alert.current_price.borrow(), &symbol.price) < percent
+                let new_percent =
+                    utils::calc_percentage_change(alert.current_price.borrow(), &symbol.price);
+                new_percent < -percent
             }
         }
     }
