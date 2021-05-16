@@ -5,7 +5,6 @@ use std::sync::{
     Arc,
 };
 use std::thread;
-use std::time::Duration;
 
 pub struct Worker {
     working_running: Arc<AtomicBool>,

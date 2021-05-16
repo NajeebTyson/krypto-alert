@@ -2,7 +2,8 @@ use crate::core::alert::{AlertType, SimpleAlert};
 use crate::core::api::SymbolResponse;
 use crate::settings::SETTINGS;
 
-use notify_rust::{Hint, Notification};
+use crate::error::AppError;
+use notify_rust::Notification;
 
 /// Notify the user about the alert
 pub fn notify(symbol: &SymbolResponse, alert: &SimpleAlert) {
@@ -22,7 +23,7 @@ pub fn notify(symbol: &SymbolResponse, alert: &SimpleAlert) {
             symbol.symbol, percentage, symbol.price
         ),
         AlertType::ChangeUnder(percentage) => format!(
-            "[{}] down {}%. Current Value: ${}",
+            "[{}] down -{}%. Current Value: ${}",
             symbol.symbol, percentage, symbol.price
         ),
     };
@@ -30,7 +31,7 @@ pub fn notify(symbol: &SymbolResponse, alert: &SimpleAlert) {
 }
 
 /// Create and show the notification
-fn show_notification(summary: &str, message: &str, timeout: &u32) {
+fn show_notification(summary: &str, message: &str, timeout: &u32) -> Result<(), AppError> {
     Notification::new()
         .summary(summary)
         .body(message)
@@ -41,7 +42,7 @@ fn show_notification(summary: &str, message: &str, timeout: &u32) {
         .timeout(*timeout as i32) // this however is
         // .action("view", "View")
         // .action("ignore", "Ignore")
-        .show();
+        .show()?;
     // .unwrap()
     // .wait_for_action(|action| match action {
     //     "default" => println!("you clicked \"default\""),
@@ -51,4 +52,5 @@ fn show_notification(summary: &str, message: &str, timeout: &u32) {
     //     "__closed" => println!("the notification was closed"),
     //     _ => (),
     // });
+    Ok(())
 }

@@ -7,7 +7,7 @@ use crate::utils;
 use futures::executor::block_on;
 
 /// Enum for alert types
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum AlertType {
     PriceAbove(Amount),
     PriceBelow(Amount),
@@ -18,7 +18,7 @@ pub enum AlertType {
     // Change24hUnder(Percentage),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SimpleAlert {
     pub id: AlertId,
     pub alert_type: AlertType,
@@ -28,7 +28,7 @@ pub struct SimpleAlert {
 }
 
 /// Main struct for alert
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Alert {
     pub symbol: Symbol,
     pub symbol_alerts: Vec<SimpleAlert>,

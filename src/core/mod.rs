@@ -1,6 +1,7 @@
 pub mod alert;
 pub mod api;
 pub mod notification;
+mod store;
 mod symbol;
 pub mod worker;
 
@@ -27,13 +28,29 @@ pub struct Alerts {
 impl Alerts {
     /// Initialize Alerts, it will load the alerts from data file if alerts exist
     pub fn init() -> Self {
-        // Construct Alert
-        let alerts = Alerts {
-            alerts: Default::default(),
+        let alerts = match store::read_data() {
+            Ok(data) => Alerts::from(data),
+            Err(err) => {
+                error!(
+                    "Alerts::init Error while reading alerts file: {}",
+                    err.to_string()
+                );
+                Alerts {
+                    alerts: Default::default(),
+                }
+            }
         };
 
         // return alert instance
         alerts
+    }
+
+    fn from(alerts: Vec<Alert>) -> Self {
+        let mut alerts_map: HashMap<PairName, Alert> = HashMap::new();
+        for alert in alerts {
+            alerts_map.insert(alert.symbol.name.to_string(), alert);
+        }
+        Alerts { alerts: alerts_map }
     }
 
     /// Create a new alert for symbol/pair
@@ -49,7 +66,7 @@ impl Alerts {
                 self.alerts.insert(symbol_name.to_string(), alert);
             }
             Some(alert) => {
-                alert.create_alert(alert_type, auto_renew);
+                alert.create_alert(alert_type, auto_renew)?;
             }
         }
         Ok(())
@@ -57,6 +74,7 @@ impl Alerts {
 
     /// Method check for prices and notify the alerts
     pub fn refresh(&mut self) {
+        println!("alerts: {:?}", self.alerts);
         // get all the markets data
         let market_data = self.get_symbols_price().unwrap();
 
@@ -69,6 +87,13 @@ impl Alerts {
 
         // sleep
         thread::sleep(Duration::from_secs(SETTINGS.settings.poll_interval));
+        // let res = store::write_data(&self);
+        // println!("write res: {:?}", res);
+    }
+
+    /// Get clone of all the alerts as a list
+    pub fn get_alerts_list(&self) -> Vec<Alert> {
+        self.alerts.iter().map(|(_, alert)| alert.clone()).collect()
     }
 
     /// Check with the current price for alert

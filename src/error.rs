@@ -1,6 +1,9 @@
+use notify_rust::error::Error as NotifyError;
 use reqwest::Error as ReqwesetError;
 use serde_json::Error as SerdeJsonError;
 use snafu::Snafu;
+
+use std::io::Error as IoError;
 
 /// Error enum to handle API related errors
 #[derive(Debug, Snafu)]
@@ -28,11 +31,41 @@ pub enum AppError {
     DefaultError { message: String },
     #[snafu(display("App error: thread is already running"))]
     ThreadAlreadyRunning,
+    #[snafu(display("App error: Parsing error: {}", message))]
+    ParsingError { message: String },
+    #[snafu(display("App error: IO error: {}", message))]
+    IOError { message: String },
+    #[snafu(display("App error: Notification error: {}", message))]
+    NotificationError { message: String },
 }
 
 impl From<SerdeJsonError> for ApiError {
     fn from(error: SerdeJsonError) -> Self {
         ApiError::ParseError {
+            message: error.to_string(),
+        }
+    }
+}
+
+impl From<SerdeJsonError> for AppError {
+    fn from(error: SerdeJsonError) -> Self {
+        AppError::ParsingError {
+            message: error.to_string(),
+        }
+    }
+}
+
+impl From<IoError> for AppError {
+    fn from(error: IoError) -> Self {
+        AppError::IOError {
+            message: error.to_string(),
+        }
+    }
+}
+
+impl From<NotifyError> for AppError {
+    fn from(error: NotifyError) -> Self {
+        AppError::NotificationError {
             message: error.to_string(),
         }
     }

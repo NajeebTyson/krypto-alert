@@ -1,8 +1,7 @@
-use crate::error::AppError;
 use crate::types::*;
 
 /// Symbol struct which contains all the symbol related attributes
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Symbol {
     pub name: PairName,
 }
