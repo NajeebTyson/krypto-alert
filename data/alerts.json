@@ -1,0 +1,40 @@
+[
+  {
+    "symbol": {
+      "name": "ETHUSDT"
+    },
+    "symbol_alerts": [
+      {
+        "id": "a08ebafe-d7e7-4bc1-927e-3ac7d2af0d26",
+        "alert_type": {
+          "ChangeOver": 1.0
+        },
+        "current_price": 3846.44,
+        "auto_renew": true
+      }
+    ]
+  },
+  {
+    "symbol": {
+      "name": "DOGEUSDT"
+    },
+    "symbol_alerts": [
+      {
+        "id": "d4373d11-e9d0-4298-8c0f-ec4efc446648",
+        "alert_type": {
+          "ChangeOver": 1.0
+        },
+        "current_price": 0.53153,
+        "auto_renew": true
+      },
+      {
+        "id": "f3d9f30a-2589-4978-a276-14c27a3bc2d9",
+        "alert_type": {
+          "ChangeUnder": 1.0
+        },
+        "current_price": 0.53153,
+        "auto_renew": true
+      }
+    ]
+  }
+]
